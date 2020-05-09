@@ -14,7 +14,13 @@ import LexerEA
               | Prd AsaEA           (Para representar la función predecesor)  
    ****************************************************************-}
 
-data AsaEA = Const Int | Sum AsaEA AsaEA | Prod AsaEA AsaEA | Scs AsaEA | Prd AsaEA
+data AsaEA = Const Int 
+              | Sum AsaEA AsaEA
+              | Res AsaEA AsaEA
+              | Prod AsaEA AsaEA
+              | Div AsaEA AsaEA
+              | Scs AsaEA 
+              | Prd AsaEA
              deriving Show
 
 {- ***************************************************************
@@ -42,7 +48,6 @@ data AsaEA = Const Int | Sum AsaEA AsaEA | Prod AsaEA AsaEA | Scs AsaEA | Prd As
 --      (Sum (Prod (Const 8) (Const 7)) 
 --           (Prod (Scs (Const 2)) (Const 1)))
 --
-
   ****************************************************************-}
 parser :: [Token] -> AsaEA
 parser t = 
@@ -73,7 +78,10 @@ parserE tokens =
      []                  -> (e1', [])    
      (Oper '+'):rst'    -> let         
                             (e2', rst'') =  parserE rst'  
-                          in (Sum e1' e2', rst'')  
+                          in (Sum e1' e2', rst'')
+     (Oper '-'):rst'    -> let         
+                            (e2', rst'') =  parserE rst'  
+                          in (Res e1' e2', rst'')  
      _  -> (e1', rst)
    where 
     (e1', rst) = parserT tokens
@@ -107,6 +115,9 @@ parserT tokens =
     (Oper '*'):rst'     -> let
                              (e2', rst'') =  parserF rst'
                            in (Prod e1' e2', rst'')
+    (Oper '/'):rst'     -> let
+                             (e2', rst'') =  parserF rst'
+                           in (Div e1' e2', rst'')
     _                   -> (e1',rst)
 
   where 
@@ -147,6 +158,7 @@ parserF (Rsv Suc:tokens) = (Scs tkns2, rest)   -- Sucesor
  where
 --  (Op Osuc) : tkns1 = tokens
   (tkns2,rest) = parserF tokens
+  
 
 
 parserF (Rsv Pred:tokens) = (Prd tkns2, rest)  -- Predecesor
@@ -155,3 +167,11 @@ parserF (Rsv Pred:tokens) = (Prd tkns2, rest)  -- Predecesor
 
 
 parserF tokens = error ("Error gramatical iniciando en : " ++ show tokens)
+
+eval :: AsaEA -> Int
+
+eval (Const n) = n
+eval (Sum x y) = (eval x) + (eval y)
+eval (Res x y) = (eval x) - (eval y)
+eval (Prod x y) = (eval x) * (eval y)
+eval (Div x y) = div (eval x) (eval y)
