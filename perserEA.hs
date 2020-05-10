@@ -168,10 +168,38 @@ parserF (Rsv Pred:tokens) = (Prd tkns2, rest)  -- Predecesor
 
 parserF tokens = error ("Error gramatical iniciando en : " ++ show tokens)
 
-eval :: AsaEA -> Int
+-- eval :: AsaEA -> Int
 
-eval (Const n) = n
-eval (Sum x y) = (eval x) + (eval y)
-eval (Res x y) = (eval x) - (eval y)
-eval (Prod x y) = (eval x) * (eval y)
-eval (Div x y) = div (eval x) (eval y)
+-- eval (Const n) = n
+-- eval (Sum x y) = (eval x) + (eval y)
+-- eval (Res x y) = (eval x) - (eval y)
+-- eval (Prod x y) = (eval x) * (eval y)
+-- eval (Div x y) = div (eval x) (eval y)
+
+
+type PControl = [Op]
+data Op = METE AsaEA
+        | SUM Int
+        | RES Int
+        | PROD Int 
+        | DIV Int
+        | SUC AsaEA
+        | PRED AsaEA
+
+eval :: AsaEA -> PControl -> Int
+eval ( Const n ) p = ejec p n
+eval ( Sum x y ) p = eval x ( METE y : p )
+eval ( Res x y ) p = eval x ( METE y : p )
+eval ( Prod x y ) p = eval x ( METE y : p )
+eval ( Div x y ) p = eval x ( METE y : p )
+
+ejec :: [ Op ] -> Int -> Int
+ejec [] n = n
+ejec ( METE y : p ) n = eval y ( SUM n : p )
+ejec ( SUM n : p ) m = ejec p ( n + m )
+ejec ( RES n : p ) m = ejec p ( n - m )
+ejec ( PROD n : p ) m = ejec p ( n * m )
+ejec ( DIV n : p ) m = ejec p (div n  m )
+
+interp :: AsaEA -> Int
+interp e = eval e []
