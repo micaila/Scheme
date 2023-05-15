@@ -1,4 +1,3 @@
-
 module ParserEA where
 
 import LexerEA
@@ -21,7 +20,7 @@ data AsaEA = Const Int
               | Div AsaEA AsaEA
               | Scs AsaEA 
               | Prd AsaEA
-             deriving Show
+             deriving Show 
 
 {- ***************************************************************
    La función (parser t) recibe una lista de tokens y construye el 
